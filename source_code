@@ -52,7 +52,7 @@ void showAccount(int i) {
     printf("Created Time   : %s\n", accounts[i].created_time);
 }
 
-/* ---------- SEARCH ACCOUNT (SECURE) ---------- */
+/* ---------- SEARCH ACCOUNT---------- */
 void searchAccount() {
     char num[20], pass[20];
 
@@ -80,7 +80,7 @@ void searchAccount() {
 int login() {
     char num[20], pass[20];
 
-    printf("\n--- %s Login ---\n", BANK_NAME);
+    printf("\n--- Login ---\n", BANK_NAME);
 
     printf("Account Number: ");
     scanf("%s", num);
@@ -111,7 +111,7 @@ void createAccount() {
         return;
     }
 
-    printf("\n--- Create Account (%s) ---\n", BANK_NAME);
+    printf("\n--- Create Account ---\n", BANK_NAME);
 
     printf("Enter Account Number: ");
     scanf("%s", accounts[total].acc_no);
@@ -134,7 +134,7 @@ void createAccount() {
 
     total++;
 
-    printf("Account created successfully!\n");
+    printf("Account created successfully! Now you can proceed to login.\n");
 }
 
 /* ---------- USER MENU ---------- */
@@ -184,7 +184,7 @@ void userMenu(int i) {
             int t = findAccount(target);
 
             if (t == -1) {
-                printf("Receiver not found!\n");
+                printf("Receiver %s not found!\n");
                 continue;
             }
 
