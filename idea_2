@@ -1,0 +1,261 @@
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_ACCOUNTS 10
+
+struct BankAccount {
+    char bank_id[20];
+    char password[20];
+    char name[50];
+    float balance;
+    float savings;
+    float interest_rate;
+    char created_time[30];   // created time added
+};
+
+struct BankAccount accounts[MAX_ACCOUNTS] = {
+    {"101", "pass101", "Alice", 5000.50, 2000.00, 5.0, "2026/03/13"},
+    {"102", "pass102", "Bob", 12000.75, 5000.00, 4.5, "2026/03/25"},
+    {"103", "pass103", "Charlie", 8000.00, 3000.00, 6.0, "2025/10/24"}
+};
+
+int totalAccounts = 3;
+
+/* ---------- TIME FUNCTION ---------- */
+void setCurrentTime(char *buffer) {
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    sprintf(buffer, "%d-%02d-%02d %02d:%02d",
+            tm.tm_year + 1900, tm.tm_mon + 1,
+            tm.tm_mday, tm.tm_hour, tm.tm_min);
+}
+
+/* ---------- DISPLAY ACCOUNT ---------- */
+void displayAccount(struct BankAccount acc) {
+    printf("\n============================================================\n");
+    printf("| %-20s | %-30s |\n", "FIELD", "DETAILS");
+    printf("============================================================\n");
+    printf("| %-20s | %-30s |\n", "Name", acc.name);
+    printf("| %-20s | %-30s |\n", "Bank ID", acc.bank_id);
+    printf("| %-20s | %-30.2f |\n", "Current Balance", acc.balance);
+    printf("| %-20s | %-29.2f%% |\n", "Interest Rate", acc.interest_rate);
+    printf("| %-20s | %-30s |\n", "Created Time", acc.created_time);
+    printf("============================================================\n");
+}
+
+/* ---------- FIND ACCOUNT ---------- */
+int findAccount(char id[]) {
+    for (int i = 0; i < totalAccounts; i++) {
+        if (strcmp(accounts[i].bank_id, id) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/* ---------- LOGIN VALIDATION ---------- */
+int login(char id[], char pass[]) {
+    for (int i = 0; i < totalAccounts; i++) {
+        if (strcmp(accounts[i].bank_id, id) == 0 &&
+            strcmp(accounts[i].password, pass) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/* ---------- CREATE ACCOUNT ---------- */
+void createAccount() {
+
+    int subChoice;
+    printf("\n1. Enter New ID\n");
+    printf("2. Exit to Main Menu\n");
+    printf("Choose option: ");
+    scanf("%d", &subChoice);
+
+    if (subChoice == 2)
+        return;
+
+    if (totalAccounts >= MAX_ACCOUNTS) {
+        printf("Bank storage full!\n");
+        return;
+    }
+
+    printf("\n=== Create New Account ===\n");
+
+    printf("Enter New Bank ID: ");
+    scanf("%s", accounts[totalAccounts].bank_id);
+
+    if (findAccount(accounts[totalAccounts].bank_id) != -1) {
+        printf("Bank ID already exists!\n");
+        return;
+    }
+
+    printf("Enter Password: ");
+    scanf("%s", accounts[totalAccounts].password);
+
+    printf("Enter Your Name: ");
+    scanf("%s", accounts[totalAccounts].name);
+
+    printf("Enter Initial Deposit: ");
+    scanf("%f", &accounts[totalAccounts].balance);
+
+    accounts[totalAccounts].interest_rate = 5.0;
+    setCurrentTime(accounts[totalAccounts].created_time);
+
+    totalAccounts++;
+
+    printf("Account Created Successfully!\n");
+}
+
+/* ---------- USER MENU ---------- */
+void userMenu(int userIndex) {
+
+    int option;
+    float amount;
+
+    do {
+        displayAccount(accounts[userIndex]);
+
+        printf("\n1. Deposit\n");
+        printf("2. Withdraw\n");
+        printf("3. Transfer\n");
+        printf("4. Logout\n");
+        printf("Choose option: ");
+        scanf("%d", &option);
+
+        switch(option) {
+
+            /* -------- DEPOSIT -------- */
+            case 1:
+                printf("Enter amount to deposit: ");
+                scanf("%f", &amount);
+
+                if (amount > 0) {
+
+                    float previous = accounts[userIndex].balance;
+                    accounts[userIndex].balance += amount;
+
+                    printf("\n================ Deposit Receipt ================\n");
+                    printf("| Previous Balance | %.2f\n", previous);
+                    printf("| Deposit Amount   | %.2f\n", amount);
+                    printf("| Current Balance  | %.2f\n", accounts[userIndex].balance);
+                    printf("=================================================\n");
+
+                } else {
+                    printf("Invalid amount!\n");
+                }
+                break;
+
+            /* -------- WITHDRAW -------- */
+            case 2:
+                printf("Enter amount to withdraw: ");
+                scanf("%f", &amount);
+
+                if (amount > 0 && amount <= accounts[userIndex].balance) {
+
+                    float previous = accounts[userIndex].balance;
+                    accounts[userIndex].balance -= amount;
+
+                    printf("\n=============== Withdrawal Receipt ===============\n");
+                    printf("| Previous Balance | %.2f\n", previous);
+                    printf("| Withdraw Amount  | %.2f\n", amount);
+                    printf("| Current Balance  | %.2f\n", accounts[userIndex].balance);
+                    printf("==================================================\n");
+
+                } else {
+                    printf("Insufficient balance or invalid amount!\n");
+                }
+                break;
+
+            /* -------- TRANSFER -------- */
+            case 3: {
+                char targetID[20];
+                printf("Enter Receiver Bank ID: ");
+                scanf("%s", targetID);
+
+                int targetIndex = findAccount(targetID);
+
+                if (targetIndex == -1) {
+                    printf("Receiver ID not found!\n");
+                    break;
+                }
+
+                printf("Enter amount to transfer: ");
+                scanf("%f", &amount);
+
+                if (amount > 0 && amount <= accounts[userIndex].balance) {
+
+                    accounts[userIndex].balance -= amount;
+                    accounts[targetIndex].balance += amount;
+
+                    printf("\nTransfer Successful to %s!\n",
+                           accounts[targetIndex].name);
+
+                } else {
+                    printf("Insufficient balance or invalid amount!\n");
+                }
+                break;
+            }
+
+            case 4:
+                printf("Logging out...\n");
+                break;
+
+            default:
+                printf("Invalid option!\n");
+        }
+
+    } while(option != 4);
+}
+
+/* ---------- MAIN ---------- */
+int main() {
+
+    int mainChoice;
+
+    while (1) {
+
+        printf("\n=========== Terminal Bank Application ===========\n");
+        printf("1. Login\n");
+        printf("2. Create Account\n");
+        printf("3. Exit\n");
+        printf("Choose option: ");
+        scanf("%d", &mainChoice);
+
+        if (mainChoice == 1) {
+
+            char id[20], pass[20];
+
+            printf("Enter Bank ID: ");
+            scanf("%s", id);
+
+            printf("Enter Password: ");
+            scanf("%s", pass);
+
+            int userIndex = login(id, pass);
+
+            if (userIndex == -1) {
+                printf("Invalid credentials!\n");
+            } else {
+                printf("Login Successful!\n");
+                userMenu(userIndex);
+            }
+
+        } else if (mainChoice == 2) {
+
+            createAccount();
+
+        } else if (mainChoice == 3) {
+
+            printf("Thank you for using our Bank Application.\n");
+            break;
+
+        } else {
+            printf("Invalid choice!\n");
+        }
+    }
+
+    return 0;
+}
